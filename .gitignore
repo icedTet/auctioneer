@@ -1,0 +1,7 @@
+*.log
+.DS_Store
+node_modules
+dist
+src/env.ts
+env.js
+outputs

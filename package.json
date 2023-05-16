@@ -1,0 +1,24 @@
+{
+  "name": "auctioneer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/icedTet/auctioneer.git",
+  "author": "John Li (Tet) <tet@tet.moe>",
+  "license": "MIT",
+  "dependencies": {
+    "nanoid": "3",
+    "probability-distributions": "^0.9.1",
+    "ts-node": "^10.9.1",
+    "tslib": "^2.5.0",
+    "typescript": "^5.0.4"
+  },
+  "scripts": {
+    "start": "node index.ts",
+    "build": "tsc",
+    "dev": "ts-node index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.1.2",
+    "@types/probability-distributions": "^0.1.0"
+  }
+}
