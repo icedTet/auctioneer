@@ -91,6 +91,7 @@ export class FPSBAuction implements Auction {
         };
     }
 }
+
 export class SPSBAuction extends FPSBAuction implements Auction {
   constructor(buyers: Buyer[], itemValue: number) {
     super(buyers, itemValue);
@@ -115,58 +116,9 @@ export class SPSBAuction extends FPSBAuction implements Auction {
     });
 
     // Reroll bidding multipliers
-    this.buyers.forEach((buyer) => {
-      buyer.rerollBiddingMultiplier();
-    });
-  }
-  findHighestBidders(): [Buyer, Buyer] {
-    let highestBid = 0;
-    let highestBidder: Buyer | null = null;
-    this.buyers.forEach((buyer) => {
-      if (buyer.bid > highestBid) {
-        highestBid = buyer.bid;
-        highestBidder = buyer;
-      }
-    });
-    let secondHighestBid = 0;
-    let secondHighestBidder: Buyer | null = null;
-    this.buyers.forEach((buyer) => {
-      if (buyer.bid > secondHighestBid && buyer.id !== highestBidder?.id) {
-        secondHighestBid = buyer.bid;
-        secondHighestBidder = buyer;
-      }
-    });
-
-    return [highestBidder!, secondHighestBidder!];
-  }
-}
-export class SPSBAuction extends FPSBAuction implements Auction {
-  constructor(buyers: Buyer[], itemValue: number) {
-    super(buyers, itemValue);
-  }
-  // Purpose: Runs the auction
-  run(): void {
-    this.buyers.forEach((buyer) => {
-      buyer.createBid();
-    });
-    // Accept bids
-    const [highestBid, secondHighestBid] = this.findHighestBidders();
-    if (!highestBid) return;
-    // console.log("Highest Bidder: ", highestBid.id);
-    this.revenue += secondHighestBid.bid;
-    highestBid.acceptBid(secondHighestBid.bid);
-
-    // Reject bids
-    this.buyers.forEach((buyer) => {
-      if (buyer.id !== highestBid.id) {
-        buyer.rejectBid();
-      }
-    });
-
-    // Reroll bidding multipliers
-    this.buyers.forEach((buyer) => {
-      buyer.rerollBiddingMultiplier();
-    });
+    // this.buyers.forEach((buyer) => {
+    //   buyer.rerollBiddingMultiplier();
+    // });
   }
   findHighestBidders(): [Buyer, Buyer] {
     let highestBid = 0;
