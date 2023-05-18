@@ -32,8 +32,8 @@ export class Buyer {
   createBid(): void {
     this.setBid(this.subjectiveValue * this.biddingMultiplier);
   }
-  acceptBid(): void {
-    this.wallet -= this.bid;
+  acceptBid(bidAmount?: number): void {
+    this.wallet -= bidAmount ?? this.bid;
     this.satiety += 1;
     if (this.wallet <= 0) {
       this.broke = true;

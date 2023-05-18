@@ -1,7 +1,18 @@
 import { Buyer } from "./Buyer";
 
+export interface Auction {
+  buyers: Map<string, Buyer>; // The buyers in the auction
+  itemValue: number; // The value of the item being auctioned
+  revenue: number; // The revenue of the auction
+  run(): void;
+  results(winRequirement: number, full: boolean): Object;
+}
+
+// FPSBAuction = First Price Sealed Bid Auction
+// SPSBAuction = Second Price Sealed Bid Auction
+
 // Purpose: Defines the Auction for blind bidding
-export class Auction {
+export class FPSBAuction implements Auction {
   buyers: Map<string, Buyer>; // The buyers in the auction
   itemValue: number; // The value of the item being auctioned
   revenue: number; // The revenue of the auction
@@ -96,5 +107,54 @@ export class Auction {
     // // broke buyers
     // const brokeBuyers = sortedBuyers.filter((buyer) => buyer.broke);
     // console.log(`There were ${brokeBuyers.length} buyers who went broke`);
+  }
+}
+export class SPSBAuction extends FPSBAuction implements Auction {
+  constructor(buyers: Buyer[], itemValue: number) {
+    super(buyers, itemValue);
+  }
+  // Purpose: Runs the auction
+  run(): void {
+    this.buyers.forEach((buyer) => {
+      buyer.createBid();
+    });
+    // Accept bids
+    const [highestBid, secondHighestBid] = this.findHighestBidders();
+    if (!highestBid) return;
+    // console.log("Highest Bidder: ", highestBid.id);
+    this.revenue += secondHighestBid.bid;
+    highestBid.acceptBid(secondHighestBid.bid);
+
+    // Reject bids
+    this.buyers.forEach((buyer) => {
+      if (buyer.id !== highestBid.id) {
+        buyer.rejectBid();
+      }
+    });
+
+    // Reroll bidding multipliers
+    this.buyers.forEach((buyer) => {
+      buyer.rerollBiddingMultiplier();
+    });
+  }
+  findHighestBidders(): [Buyer, Buyer] {
+    let highestBid = 0;
+    let highestBidder: Buyer | null = null;
+    this.buyers.forEach((buyer) => {
+      if (buyer.bid > highestBid) {
+        highestBid = buyer.bid;
+        highestBidder = buyer;
+      }
+    });
+    let secondHighestBid = 0;
+    let secondHighestBidder: Buyer | null = null;
+    this.buyers.forEach((buyer) => {
+      if (buyer.bid > secondHighestBid && buyer.id !== highestBidder?.id) {
+        secondHighestBid = buyer.bid;
+        secondHighestBidder = buyer;
+      }
+    });
+
+    return [highestBidder!, secondHighestBidder!];
   }
 }
