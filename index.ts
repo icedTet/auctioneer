@@ -14,13 +14,13 @@ const makeWorkerPromise = () =>
   new Promise((res) => {
     const worker = fork("./worker.ts");
     worker.on("message", (message) => {
-      const wMsg = message as WorkerResponse;
+      const wMsg = message as WorkerResponse[];
       res(wMsg);
     });
     // worker.on("exit", (message) => {
     //   res(message);
     // });
-  }) as Promise<WorkerResponse>;
+  }) as Promise<WorkerResponse[]>;
 // readdirSync("./outputs").forEach((file) => {
 //   unlinkSync(`./outputs/${file}`);
 // });
@@ -36,15 +36,17 @@ for (let i = 0; i < 50; i++) {
   // const dir = readdirSync("./outputs");
   const allResults = [] as WorkerResponse["raw"];
   const goodResults = [] as WorkerResponse["raw"];
-  results.forEach((result) => {
-    const data = result;
-    allResults?.push(...(data.raw || []));
-    if (Object.values(data.goodResults).length)
-      goodResults?.push(
-        ...Object.values(data.goodResults).map((x) => ({
-          ...x,
-        }))
-      );
+  results.forEach((workerResult) => {
+    workerResult.forEach((result) => {
+      const data = result;
+      allResults?.push(...(data.raw || []));
+      if (Object.values(data.goodResults).length)
+        goodResults?.push(
+          ...Object.values(data.goodResults).map((x) => ({
+            ...x,
+          }))
+        );
+    });
   });
   writeFileSync("count.txt", "0");
   // writeFileSync("allResults.json", JSON.stringify(allResults));
