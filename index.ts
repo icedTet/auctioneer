@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync, unlinkSync, writeFileSync } from "fs";
 import { Auction } from "./Auction";
-import { generateBuyers } from "./Buyer";
+import { generateBuyers } from "./BuyerSecondPlace";
 import { fork } from "child_process";
 
 const makeWorkerPromise = () =>
@@ -32,6 +32,7 @@ for (let i = 0; i < 10; i++) {
         if (!raw) return;
         const data = JSON.parse(raw);
         allResults.push(...data.raw);
+        allResults.push(...data.raw2);
         if (Object.values(data.goodResults).length)
             goodResults.push({
                 file: file,

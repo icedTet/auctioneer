@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import probabaility from "probability-distributions";
+// import probabaility from "probability-distributions";
 
 export class Buyer {
     subjectiveValue: number; // The buyer's subjective value for the item
@@ -55,29 +55,31 @@ export class Buyer {
       bid: this.bid,
       wallet: this.wallet,
       satiety:
-        this.satiety +
-        (this.satiety > 0 ? this.wallet / (this.subjectiveValue * 5) : 0),
+        this.satiety * this.subjectiveValue +
+        this.wallet,
+        // previously (this.satiety > 0 ? this.wallet / (this.subjectiveValue * 5) : 0)
       broke: !!this.broke,
       id: this.id,
-      bids: [], //this.bids,
+      bids: this.satiety > 5050 ? this.bids : [] , //this.bids,
+      secondPlace: false,
     };
   }
 }
 
-export const generateBuyers = (
-    numBuyers: number,
-    wallet: number,
-    subjectiveValue: number,
-    subjectiveValueVariation: number,
-): Buyer[] => {
-    const buyers: Buyer[] = [];
-    const probs = probabaility.rnorm(
-        numBuyers,
-        subjectiveValue,
-        subjectiveValueVariation
-    );
-    for (let i = 0; i < numBuyers; i++) {
-        buyers.push(new Buyer(probs[i], wallet));
-    }
-    return buyers;
-};
+// export const generateBuyers = (
+//     numBuyers: number,
+//     wallet: number,
+//     subjectiveValue: number,
+//     subjectiveValueVariation: number,
+// ): Buyer[] => {
+//     const buyers: Buyer[] = [];
+//     const probs = probabaility.rnorm(
+//         numBuyers,
+//         subjectiveValue,
+//         subjectiveValueVariation
+//     );
+//     for (let i = 0; i < numBuyers; i++) {
+//         buyers.push(new Buyer(probs[i], wallet));
+//     }
+//     return buyers;
+// };
