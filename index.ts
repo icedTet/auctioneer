@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync, unlinkSync, writeFileSync } from "fs";
 import { Auction } from "./Auction";
-import { BuyerJSON, generateBuyers } from "./Buyer";
+import { BuyerJSON } from "./Buyer";
 import { fork } from "child_process";
 type WorkerResponse = {
   allResults: { [k: string]: number };
