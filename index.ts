@@ -25,7 +25,7 @@ const makeWorkerPromise = () =>
 //   unlinkSync(`./outputs/${file}`);
 // });
 const workers = [];
-for (let i = 0; i < 1000; i++) {
+for (let i = 0; i < 50; i++) {
   workers.push(makeWorkerPromise());
 }
 
