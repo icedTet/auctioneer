@@ -1,48 +1,57 @@
 import { readFileSync, readdirSync, unlinkSync, writeFileSync } from "fs";
 import { Auction } from "./Auction";
-import { generateBuyers } from "./BuyerSecondPlace";
+import { BuyerJSON, generateBuyers } from "./Buyer";
 import { fork } from "child_process";
-
+type WorkerResponse = {
+  allResults: { [k: string]: number };
+  goodResults: {
+    [k: string]: BuyerJSON;
+  };
+  raw: BuyerJSON[] | null;
+  revenue: number;
+};
 const makeWorkerPromise = () =>
-    new Promise((res) => {
-        const worker = fork("./worker.ts");
-        worker.on("exit", (message) => {
-            res(message);
-        });
+  new Promise((res) => {
+    const worker = fork("./worker.ts");
+    worker.on("message", (message) => {
+      const wMsg = message as WorkerResponse;
+      res(wMsg);
     });
-
-readdirSync("./outputs").forEach((file) => {
-    unlinkSync(`./outputs/${file}`);
-});
-
+    // worker.on("exit", (message) => {
+    //   res(message);
+    // });
+  }) as Promise<WorkerResponse>;
+// readdirSync("./outputs").forEach((file) => {
+//   unlinkSync(`./outputs/${file}`);
+// });
 const workers = [];
-for (let i = 0; i < 10; i++) {
-    workers.push(makeWorkerPromise());
+for (let i = 0; i < 1000; i++) {
+  workers.push(makeWorkerPromise());
 }
 
 (async () => {
-    const results = await Promise.all(workers);
-    console.log("Done, Aggregating results...");
-    // read all files in outputs
-    const dir = readdirSync("./outputs");
-    const allResults = [] as any;
-    const goodResults = [] as any;
-    dir.forEach((file) => {
-        const raw = readFileSync(`./outputs/${file}`, "utf-8").toString();
-        if (!raw) return;
-        const data = JSON.parse(raw);
-        allResults.push(...data.raw);
-        allResults.push(...data.raw2);
-        if (Object.values(data.goodResults).length)
-            goodResults.push({
-                file: file,
-                result: data.goodResults,
-            });
-    });
-    writeFileSync("count.txt", "0");
-    // writeFileSync("allResults.json", JSON.stringify(allResults));
-    writeFileSync("allRawResults.json", JSON.stringify(allResults));
-    if (goodResults.length) {
-        writeFileSync("goodResults.json", JSON.stringify(goodResults));
-    }
+  const results = await Promise.all(workers);
+  console.log("Done, Aggregating results...");
+  // read all files in outputs
+  // const dir = readdirSync("./outputs");
+  const allResults = [] as WorkerResponse["raw"];
+  const goodResults = [] as WorkerResponse["raw"];
+  results.forEach((result) => {
+    const data = result;
+    allResults?.push(...(data.raw || []));
+    if (Object.values(data.goodResults).length)
+      goodResults?.push(
+        ...Object.values(data.goodResults).map((x) => ({
+          ...x,
+        }))
+      );
+  });
+  writeFileSync("count.txt", "0");
+  // writeFileSync("allResults.json", JSON.stringify(allResults));
+  writeFileSync("allRawResults.json", JSON.stringify(allResults));
+  if (goodResults?.length) {
+    writeFileSync("goodResults.json", JSON.stringify(goodResults));
+  }
 })();
+
+console.log("Running...");
