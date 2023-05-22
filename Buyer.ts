@@ -25,11 +25,8 @@ export class Buyer {
     }
 
   // Purpose: Sets the buyer's bid, up to the amount of money they have left
-  setBid(bid: number): void {
-    this.bid = Math.min(bid, this.wallet);
-  }
   createBid(): void {
-    this.setBid(this.subjectiveValue);
+    this.bid = Math.min(this.subjectiveValue, this.wallet);
   }
   acceptBid(bidAmount?: number): void {
     this.wallet -= bidAmount ?? this.bid;

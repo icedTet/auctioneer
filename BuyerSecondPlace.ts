@@ -4,12 +4,8 @@ import probabaility from "probability-distributions";
 export class BuyerSecondPlace extends Buyer {
     buyers = 100;
 
-    setNumBuyers(buyers: number): void {
-        this.buyers = buyers;
-    }
-
-    setBid(bid: number): void {
-        this.bid = Math.min((this.buyers-1)/(this.buyers)*bid + 1, this.wallet);
+    createBid(): void {
+        this.bid = Math.min((this.buyers-1)/(this.buyers)*this.subjectiveValue + 1, this.wallet);
     }
 
     toJSON() {
@@ -17,9 +13,7 @@ export class BuyerSecondPlace extends Buyer {
             subjectiveValue: this.subjectiveValue,
             bid: this.bid,
             wallet: this.wallet,
-            satiety:
-                this.satiety * this.subjectiveValue +
-                this.wallet,
+            satiety: this.satiety * this.subjectiveValue + this.wallet,
             broke: !!this.broke,
             id: this.id,
             bids: this.satiety > 5050 ? this.bids : [] , //this.bids,
