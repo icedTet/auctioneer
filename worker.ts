@@ -9,7 +9,7 @@ import {
   unlinkSync,
   writeFileSync,
 } from "fs";
-
+const allRes = [];
 for (let a = 0; a < 50; a++) {
   const buyers = generateBuyers(50, 5000, 200, 200);
   const secondPlaceBuyers = generateSecondPlaceBuyers(50, 5000, 200, 200);
@@ -22,11 +22,7 @@ for (let a = 0; a < 50; a++) {
     auction.run();
   }
   const results = auction.results(10, true);
-  process.send?.(results);
-  console.log("Done Worker");
-  setTimeout(() => {
-    process.exit(0);
-  }, 1000);
+  allRes.push(results);
   // const currCount = ~~readFileSync("count.txt", "utf-8").toString();
   // writeFileSync("count.txt", `${currCount + 1}`);
   // writeFile(
@@ -36,3 +32,8 @@ for (let a = 0; a < 50; a++) {
   //   process.exit(0);
   // });
 }
+process.send?.(allRes);
+console.log("Done Worker");
+setTimeout(() => {
+  process.exit(0);
+}, 1000);
