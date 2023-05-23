@@ -5,7 +5,8 @@ export class BuyerSecondPlace extends Buyer {
     buyers = 100;
 
     createBid(): void {
-        this.bid = Math.min((this.buyers-1)/(this.buyers)*this.subjectiveValue + 1, this.wallet);
+        // this.bid = Math.min((this.buyers-1)/(this.buyers)*this.subjectiveValue + 1, this.wallet);
+        this.bid = Math.min(this.subjectiveValue, this.wallet);
     }
 
     toJSON() {

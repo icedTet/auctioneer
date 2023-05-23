@@ -1,17 +1,16 @@
 import { nanoid } from "nanoid";
 
 export type BuyerJSON = {
-  subjectiveValue: number;
-  bid: number;
-  // biddingMultiplier: number;
-  wallet: number;
-  satiety: number;
-  broke: boolean;
-  id: string;
-  bids: {
+    subjectiveValue: number;
     bid: number;
-    accepted: boolean;
-}[]
+    wallet: number;
+    satiety: number;
+    broke: boolean;
+    id: string;
+    bids: {
+        bid: number;
+        accepted: boolean;
+    }[]
 };
 
 export class Buyer {
@@ -25,6 +24,7 @@ export class Buyer {
         bid: number;
         accepted: boolean;
     }[];
+
     constructor(subjectiveValue: number, wallet: number) {
         this.subjectiveValue = Math.max(subjectiveValue, 0) + 50;
         // If the bidding multiplier is not provided, set it to a random, normally distributed number from 0.5 to 1.5
@@ -37,59 +37,41 @@ export class Buyer {
         this.bids = [];
     }
 
-  // Purpose: Sets the buyer's bid, up to the amount of money they have left
-  createBid(): void {
-    this.bid = Math.min(this.subjectiveValue, this.wallet);
-  }
-
-  acceptBid(bidAmount?: number): void {
-    this.wallet -= bidAmount ?? this.bid;
-    this.satiety += 1;
-    if (this.wallet <= 0) {
-      this.broke = true;
+    // Purpose: Sets the buyer's bid, up to the amount of money they have left
+    createBid(): void {
+        this.bid = Math.min(this.subjectiveValue, this.wallet);
     }
-    this.bids.push({
-      bid: this.bid,
-      accepted: true,
-    });
-  }
 
-  rejectBid(): void {
-    this.bids.push({
-      bid: this.bid,
-      accepted: false,
-    });
-  }
-  
-  toJSON() {
-    return {
-      subjectiveValue: this.subjectiveValue,
-      bid: this.bid,
-      wallet: this.wallet,
-      satiety: this.satiety * this.subjectiveValue + this.wallet,
-        // previously (this.satiety > 0 ? this.wallet / (this.subjectiveValue * 5) : 0)
-      broke: !!this.broke,
-      id: this.id,
-      bids: this.satiety > 5050 ? this.bids : [] , //this.bids,
-      secondPlace: false,
-    };
-  }
+    acceptBid(bidAmount?: number): void {
+        this.wallet -= bidAmount ?? this.bid;
+        this.satiety += 1;
+        if (this.wallet <= 0) {
+            this.broke = true;
+        }
+        this.bids.push({
+            bid: this.bid,
+            accepted: true,
+        });
+    }
+
+    rejectBid(): void {
+        this.bids.push({
+        bid: this.bid,
+        accepted: false,
+        });
+    }
+
+    toJSON() {
+        return {
+            subjectiveValue: this.subjectiveValue,
+            bid: this.bid,
+            wallet: this.wallet,
+            satiety: this.satiety * this.subjectiveValue + this.wallet,
+            // previously (this.satiety > 0 ? this.wallet / (this.subjectiveValue * 5) : 0)
+            broke: !!this.broke,
+            id: this.id,
+            bids: this.satiety > 5050 ? this.bids : [] , //this.bids,
+            secondPlace: false,
+        };
+    }
 }
-
-// export const generateBuyers = (
-//     numBuyers: number,
-//     wallet: number,
-//     subjectiveValue: number,
-//     subjectiveValueVariation: number,
-// ): Buyer[] => {
-//     const buyers: Buyer[] = [];
-//     const probs = probabaility.rnorm(
-//         numBuyers,
-//         subjectiveValue,
-//         subjectiveValueVariation
-//     );
-//     for (let i = 0; i < numBuyers; i++) {
-//         buyers.push(new Buyer(probs[i], wallet));
-//     }
-//     return buyers;
-// };

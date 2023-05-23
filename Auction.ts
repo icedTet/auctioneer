@@ -46,54 +46,7 @@ export class FPSBAuction implements Auction {
         buyer.rejectBid();
       }
     });
-    // Reroll bidding multipliers
   }
-//   findHighestBidder(): Buyer {
-//     let highestBid = 0;
-//     let highestBidder: Buyer | null = null;
-//     this.buyers.forEach((buyer) => {
-//       if (buyer.bid > highestBid) {
-//         highestBid = buyer.bid;
-//         highestBidder = buyer;
-//       }
-//     });
-//     return highestBidder!;
-//   }
-//   results(winRequirement: number, full: boolean) {
-//     // sort by highest satiety
-//     const sortedBuyers = Array.from(this.buyers.values()).sort(
-//       (a, b) => b.satiety - a.satiety
-//     );
-//     // sortedBuyers.slice(0, 5).forEach((buyer) => {
-//     //   console.log(
-//     //     `Buyer ${buyer.id} bought ${buyer.satiety} items for a total of ${buyer.wallet} dollars`
-//     //   );
-//     // });
-//     // count how many buyers bought the item
-//     let satietyMap = new Map<number, number>();
-//     let goodMap = new Map<string, BuyerJSON>();
-//     sortedBuyers.forEach((buyer) => {
-//       satietyMap.set(buyer.satiety, (satietyMap.get(buyer.satiety) || 0) + 1);
-//       if (buyer.satiety >= winRequirement) {
-//         goodMap.set(buyer.id, buyer.toJSON());
-//       }
-//     });
-//     // console.log({
-//     //   allResults: Object.fromEntries(satietyMap.entries()),
-//     //   goodResults: Object.fromEntries(goodMap.entries()),
-//     // });
-//     return {
-//       allResults: Object.fromEntries(satietyMap.entries()),
-//       goodResults: Object.fromEntries(goodMap.entries()),
-//       raw: full ? sortedBuyers.map((x) => x.toJSON()) : null,
-//       revenue: this.revenue,
-//     };
-
-//     // // Reroll bidding multipliers
-//     // this.buyers.forEach((buyer) => {
-//     //   buyer.rerollBiddingMultiplier();
-//     // });
-//   }
 
   findHighestBidder(): Buyer {
     let highestBid = 0;
@@ -112,12 +65,6 @@ export class FPSBAuction implements Auction {
     const sortedBuyers = Array.from(this.buyers.values()).sort(
       (a, b) => b.satiety - a.satiety
     );
-    // sortedBuyers.slice(0, 5).forEach((buyer) => {
-    //   console.log(
-    //     `Buyer ${buyer.id} bought ${buyer.satiety} items for a total of ${buyer.wallet} dollars`
-    //   );
-    // });
-    // count how many buyers bought the item
     let satietyMap = new Map();
     let goodMap = new Map<string, BuyerJSON>();
     sortedBuyers.forEach((buyer) => {
@@ -126,10 +73,6 @@ export class FPSBAuction implements Auction {
         goodMap.set(buyer.id, buyer.toJSON());
       }
     });
-    // console.log({
-    //   allResults: Object.fromEntries(satietyMap.entries()),
-    //   goodResults: Object.fromEntries(goodMap.entries()),
-    // });
     return {
       allResults: Object.fromEntries(satietyMap.entries()),
       goodResults: Object.fromEntries(goodMap.entries()),
@@ -140,134 +83,131 @@ export class FPSBAuction implements Auction {
 }
 
 export class SPSBAuction extends FPSBAuction implements Auction {
-  secondPlaceBuyers: Map<string, BuyerSecondPlace>;
+    secondPlaceBuyers: Map<string, BuyerSecondPlace>;
 
-  constructor(
-    buyers: Buyer[],
-    secondPlaceBuyers: BuyerSecondPlace[],
-    itemValue: number
-  ) {
-    super(buyers, itemValue);
+    constructor(
+        buyers: Buyer[],
+        secondPlaceBuyers: BuyerSecondPlace[],
+        itemValue: number
+    ) {
+        super(buyers, itemValue);
 
-    this.secondPlaceBuyers = new Map();
-    secondPlaceBuyers.forEach((BuyerSecondPlace) => {
-      this.secondPlaceBuyers.set(BuyerSecondPlace.id, BuyerSecondPlace);
-    });
-  }
-
-  // previously findHighestBidders(): [Buyer, Buyer]
-  findHighestBidders() {
-    let highestBid = 0;
-    let highestBidder: Buyer | null = null;
-    this.buyers.forEach((buyer) => {
-      if (buyer.bid > highestBid) {
-        highestBid = buyer.bid;
-        highestBidder = buyer;
-      }
-    });
-
-    let secondHighestBid = 0;
-    let secondHighestBidder: Buyer | null = null;
-    this.buyers.forEach((buyer) => {
-      if (buyer.bid > secondHighestBid && buyer.id !== highestBidder?.id) {
-        secondHighestBid = buyer.bid;
-        secondHighestBidder = buyer;
-      }
-    });
-
-    this.secondPlaceBuyers.forEach((secondPlaceBuyer) => {
-      if (secondPlaceBuyer.bid > secondHighestBid) {
-        if (secondPlaceBuyer.bid > highestBid) {
-          secondHighestBid = highestBid;
-          secondHighestBidder = highestBidder;
-        } else {
-          secondHighestBid = secondPlaceBuyer.bid;
-          secondHighestBidder = secondPlaceBuyer;
-        }
-      }
-    });
-
-    return [highestBidder!, secondHighestBidder!];
-  }
-
-  // Purpose: Runs the auction
-  run(): void {
-    this.buyers.forEach((buyer) => {
-      buyer.createBid();
-    });
-    this.secondPlaceBuyers.forEach((secondPlaceBuyer) => {
-      // TODO: set num buyers
-      secondPlaceBuyer.createBid();
-    });
-
-    // Accept bids
-    const [highestBid, secondHighestBid] = this.findHighestBidders();
-    if (!highestBid) return;
-    // console.log("Highest Bidder: ", highestBid.id);
-    this.revenue += highestBid.bid;
-    highestBid.acceptBid(highestBid.bid);
-
-    // Reject bids
-    if (highestBid instanceof BuyerSecondPlace) {
-      this.secondPlaceBuyers.forEach((secondPlaceBuyer) => {
-        if (secondPlaceBuyer.id !== highestBid.id) {
-          secondPlaceBuyer.rejectBid();
-        }
-      });
-      this.buyers.forEach((buyer) => {
-        buyer.rejectBid();
-      });
-    } else {
-      this.buyers.forEach((buyer) => {
-        if (buyer.id !== highestBid.id) {
-          buyer.rejectBid();
-        }
-      });
-      this.secondPlaceBuyers.forEach((secondPlaceBuyer) => {
-        secondPlaceBuyer.rejectBid();
-      });
+        this.secondPlaceBuyers = new Map();
+        secondPlaceBuyers.forEach((BuyerSecondPlace) => {
+            this.secondPlaceBuyers.set(BuyerSecondPlace.id, BuyerSecondPlace);
+        });
     }
 
-    // Reroll bidding multipliers
-    // this.buyers.forEach((buyer) => {
-    //   buyer.rerollBiddingMultiplier();
-    // });
-  }
+    // previously findHighestBidders(): [Buyer, Buyer]
+    findHighestBidders() {
+        let highestBid = 0;
+        let secondHighestBid = 0;
 
-  results(winRequirement: number, full: boolean) {
-    // sort by highest satiety
-    const sortedBuyers = Array.from(this.buyers.values()).sort(
-      (a, b) => b.satiety - a.satiety
-    );
-    const sortedSecondPlaceBuyers = Array.from(
-      this.secondPlaceBuyers.values()
-    ).sort((a, b) => b.satiety - a.satiety);
+        let highestBidder: Buyer | null = null;
+        let secondHighestBidder: Buyer | null = null;
 
-    let satietyMap = new Map();
-    let goodMap = new Map<string, BuyerJSON>();
-    sortedBuyers.forEach((buyer) => {
-      satietyMap.set(buyer.satiety, (satietyMap.get(buyer.satiety) || 0) + 1);
-      if (buyer.satiety >= winRequirement) {
-        goodMap.set(buyer.id, buyer.toJSON());
-      }
-    });
+        this.buyers.forEach((buyer) => {
+            if (buyer.bid > highestBid) {
+                highestBid = buyer.bid;
+                highestBidder = buyer;
+            } 
+        });
+        this.buyers.forEach((buyer) => {
+            if (buyer.bid > secondHighestBid && buyer.id !== highestBidder?.id) {
+                secondHighestBid = buyer.bid;
+                secondHighestBidder = buyer;
+            }
+        });
 
-    sortedSecondPlaceBuyers.forEach((secondPlaceBuyer) => {
-      satietyMap.set(
-        secondPlaceBuyer.satiety,
-        (satietyMap.get(secondPlaceBuyer.satiety) || 0) + 1
-      );
-      if (secondPlaceBuyer.satiety >= winRequirement) {
-        goodMap.set(secondPlaceBuyer.id, secondPlaceBuyer.toJSON());
-      }
-    });
+        this.secondPlaceBuyers.forEach((secondPlaceBuyer) => {
+            if (secondPlaceBuyer.bid > secondHighestBid) {
+                if (secondPlaceBuyer.bid > highestBid) {
+                    secondHighestBid = highestBid;
+                    secondHighestBidder = highestBidder;
 
-    return {
-      allResults: Object.fromEntries(satietyMap.entries()),
-      goodResults: Object.fromEntries(goodMap.entries()),
-      raw: full ? sortedBuyers.map((x) => x.toJSON()) : null,
-      raw2: full ? sortedSecondPlaceBuyers.map((x) => x.toJSON()) : null,
-      revenue: this.revenue,
-    };
-  }
+                    highestBid = secondPlaceBuyer.bid;
+                    highestBidder = secondPlaceBuyer;
+                } else {
+                    secondHighestBid = secondPlaceBuyer.bid;
+                    secondHighestBidder = secondPlaceBuyer;
+                }
+            }
+        });
+        return [highestBidder!, secondHighestBidder!];
+    }
+
+    // Purpose: Runs the auction
+    run(): void {
+        this.buyers.forEach((buyer) => {
+            buyer.createBid();
+        });
+        this.secondPlaceBuyers.forEach((secondPlaceBuyer) => {
+            secondPlaceBuyer.createBid();
+        });
+
+        // Accept bids
+        const [highestBid, secondHighestBid] = this.findHighestBidders();
+        if (!highestBid) return;
+        // console.log("Highest Bidder: ", highestBid.id);
+        this.revenue += highestBid.bid;
+        highestBid.acceptBid(highestBid.bid);
+
+        // Reject bids
+        if (highestBid instanceof BuyerSecondPlace) {
+            this.secondPlaceBuyers.forEach((secondPlaceBuyer) => {
+                if (secondPlaceBuyer.id !== highestBid.id) {
+                    secondPlaceBuyer.rejectBid();
+                }
+            });
+            this.buyers.forEach((buyer) => {
+                buyer.rejectBid();
+            });
+        } else {
+            this.buyers.forEach((buyer) => {
+                if (buyer.id !== highestBid.id) {
+                    buyer.rejectBid();
+                }
+            });
+            this.secondPlaceBuyers.forEach((secondPlaceBuyer) => {
+                secondPlaceBuyer.rejectBid();
+            });
+        }
+    }
+
+    results(winRequirement: number, full: boolean) {
+        // sort by highest satiety
+        const sortedBuyers = Array.from(this.buyers.values()).sort(
+            (a, b) => b.satiety - a.satiety
+        );
+        const sortedSecondPlaceBuyers = Array.from(
+            this.secondPlaceBuyers.values()
+        ).sort((a, b) => b.satiety - a.satiety);
+
+        let satietyMap = new Map();
+        let goodMap = new Map<string, BuyerJSON>();
+        sortedBuyers.forEach((buyer) => {
+            satietyMap.set(buyer.satiety, (satietyMap.get(buyer.satiety) || 0) + 1);
+            if (buyer.satiety >= winRequirement) {
+                goodMap.set(buyer.id, buyer.toJSON());
+            }
+        });
+
+        sortedSecondPlaceBuyers.forEach((secondPlaceBuyer) => {
+            satietyMap.set(
+                secondPlaceBuyer.satiety,
+                (satietyMap.get(secondPlaceBuyer.satiety) || 0) + 1
+            );
+            if (secondPlaceBuyer.satiety >= winRequirement) {
+                goodMap.set(secondPlaceBuyer.id, secondPlaceBuyer.toJSON());
+            }
+        });
+
+        return {
+            allResults: Object.fromEntries(satietyMap.entries()),
+            goodResults: Object.fromEntries(goodMap.entries()),
+            raw: full ? sortedBuyers.map((x) => x.toJSON()) : null,
+            raw2: full ? sortedSecondPlaceBuyers.map((x) => x.toJSON()) : null,
+            revenue: this.revenue,
+        };
+    }
 }
